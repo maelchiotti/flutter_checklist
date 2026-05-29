@@ -1,3 +1,4 @@
-# settings_tiles example
+# flutter_checklist example
 
-An example on how to use the [settings_tiles](https://pub.dev/packages/settings_tiles) package.
+An example on how to use the [flutter_checklist](https://pub.dev/packages/flutter_checklist)
+package.
