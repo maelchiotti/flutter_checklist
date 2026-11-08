@@ -34,4 +34,4 @@ Running `flutter pub get` with a newer Flutter rewrites `example/pubspec.lock`: 
 
 ## Git
 
-Commits on `main`, prefixed `feat:`, `fix:`, `misc:` or `chore:`, and a `vX.Y.Z` commit for each version. `CHANGELOG.md` has one `## X.Y.Z` section per version with one sentence per change.
+Commits on `main`, and a `vX.Y.Z` commit for each version. `CHANGELOG.md` has one `## X.Y.Z` section per version with one sentence per change.
