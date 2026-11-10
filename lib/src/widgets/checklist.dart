@@ -12,9 +12,11 @@ class Checklist extends StatefulWidget {
   /// A checklist with a list of [lines].
   ///
   /// The [lines] correspond to the entries in the checklist, with a text and whether they are toggled.
+  /// They are only read when the checklist is created: to replace them afterwards, also give the checklist a new
+  /// [key].
   ///
   /// On each change in the checklist (a line is added, removed, toggled or its text is changed),
-  /// the [onChanged] callback is fired with the new list of lines.
+  /// the [onChanged] callback is fired with a copy of the new list of lines.
   ///
   /// Set [enabled] to false to disable editing and toggling of the lines.
   ///
@@ -38,6 +40,9 @@ class Checklist extends StatefulWidget {
   });
 
   /// The list of entries to display in the checklist, with a text and whether they are toggled.
+  ///
+  /// They are only read when the checklist is created: changing them afterwards has no effect. To reset the checklist
+  /// with new lines, also give it a new `key`, for example a `ValueKey` of the lines or of their source.
   final List<ChecklistLine> lines;
 
   /// Whether this checklist is enabled and allow editing its items.
@@ -73,6 +78,8 @@ class Checklist extends StatefulWidget {
   final ChecklistLocalizations? localizations;
 
   /// Called when a line in the checklist is added, removed, toggled or its text is changed with the new list of lines.
+  ///
+  /// The list is a copy, that the checklist doesn't change afterwards.
   final void Function(List<ChecklistLine>) onChanged;
 
   /// Focus node of the placeholder `TextField` that keeps the keyboard on screen when adding a new item.
@@ -133,7 +140,7 @@ class _ChecklistState extends State<Checklist> {
       values.insert(newIndex, value);
     });
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   void onReorderEnd(int index) {
@@ -146,7 +153,7 @@ class _ChecklistState extends State<Checklist> {
 
     values[index] = value;
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   void updateText(Key key, String text) {
@@ -155,7 +162,7 @@ class _ChecklistState extends State<Checklist> {
 
     values[index] = value;
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   void addItem(Key? key) {
@@ -172,7 +179,7 @@ class _ChecklistState extends State<Checklist> {
       addedItemKeyNotifier.value = newKey;
     });
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   void removeItem(Key key) {
@@ -183,7 +190,7 @@ class _ChecklistState extends State<Checklist> {
       values.removeAt(index);
     });
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   @override
