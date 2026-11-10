@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_checklist/checklist.dart';
 import 'package:flutter_checklist/l10n/checklist_localizations/checklist_localizations_en.g.dart';
-import 'package:flutter_checklist/src/utils/constants.dart';
 import 'package:flutter_checklist/src/widgets/item_tile.dart';
 import 'package:flutter_checklist/src/widgets/keep_keyboard_on_screen.dart';
 import 'package:flutter_checklist/src/widgets/new_item_button.dart';
@@ -77,6 +76,10 @@ class Checklist extends StatefulWidget {
   final void Function(List<ChecklistLine>) onChanged;
 
   /// Focus node of the placeholder `TextField` that keeps the keyboard on screen when adding a new item.
+  @Deprecated(
+    'Each checklist now has its own focus node: this one is no longer used. '
+    'It will be removed in the next major version.',
+  )
   static final keepKeyboardFocusNode =
       FocusNode(debugLabel: 'Keep keyboard on screen');
 
@@ -88,6 +91,16 @@ class _ChecklistState extends State<Checklist> {
   late final List<Key> keys;
   late final List<ChecklistLine> values;
 
+  /// Focus node of the placeholder `TextField` that keeps the keyboard on screen when adding a new item.
+  final keepKeyboardFocusNode =
+      FocusNode(debugLabel: 'Keep keyboard on screen');
+
+  /// Notifier of the key of the item being dragged, or `null` if none is.
+  final draggedItemKeyNotifier = ValueNotifier<Key?>(null);
+
+  /// Notifier of the key of the last added item, or `null` if none was added.
+  final addedItemKeyNotifier = ValueNotifier<Key?>(null);
+
   @override
   void initState() {
     super.initState();
@@ -98,10 +111,11 @@ class _ChecklistState extends State<Checklist> {
 
   @override
   void dispose() {
-    super.dispose();
+    keepKeyboardFocusNode.dispose();
+    draggedItemKeyNotifier.dispose();
+    addedItemKeyNotifier.dispose();
 
-    draggedItemKeyNotifier.value = null;
-    addedItemKeyNotifier.value = null;
+    super.dispose();
   }
 
   void onReorderStart(int index) {
@@ -145,7 +159,7 @@ class _ChecklistState extends State<Checklist> {
   }
 
   void addItem(Key? key) {
-    Checklist.keepKeyboardFocusNode.requestFocus();
+    keepKeyboardFocusNode.requestFocus();
 
     setState(() {
       final index = key != null ? keys.indexWhere((k) => k == key) + 1 : 0;
@@ -186,7 +200,7 @@ class _ChecklistState extends State<Checklist> {
         ? ListView(
             children: [
               KeepKeyboardOnScreen(
-                focusNode: Checklist.keepKeyboardFocusNode,
+                focusNode: keepKeyboardFocusNode,
                 keyboardType: widget.keyboardType,
                 textInputAction: widget.textInputAction,
                 textCapitalization: widget.textCapitalization,
@@ -202,6 +216,8 @@ class _ChecklistState extends State<Checklist> {
                     keyboardType: widget.keyboardType,
                     textInputAction: widget.textInputAction,
                     textCapitalization: widget.textCapitalization,
+                    draggedItemKeyNotifier: draggedItemKeyNotifier,
+                    addedItemKeyNotifier: addedItemKeyNotifier,
                     onChanged: updateText,
                     onToggled: updateToggled,
                     onSubmitted: addItem,
@@ -232,6 +248,8 @@ class _ChecklistState extends State<Checklist> {
                 key: keys[index],
                 value: values[index],
                 enabled: false,
+                draggedItemKeyNotifier: draggedItemKeyNotifier,
+                addedItemKeyNotifier: addedItemKeyNotifier,
                 localizations: localizations,
               );
             },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_checklist/checklist.dart';
-import 'package:flutter_checklist/src/utils/constants.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_checklist/src/utils/extensions/color_extension.dart';
 
 /// Item tile widget.
@@ -15,6 +15,8 @@ class ItemTile extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.textInputAction = TextInputAction.newline,
     this.textCapitalization = TextCapitalization.sentences,
+    required this.draggedItemKeyNotifier,
+    required this.addedItemKeyNotifier,
     required this.localizations,
     this.onToggled,
     this.onChanged,
@@ -52,6 +54,12 @@ class ItemTile extends StatefulWidget {
 
   /// The `TextCapitalization` of the text field.
   final TextCapitalization textCapitalization;
+
+  /// Notifier of the key of the item being dragged in the checklist, to highlight this item when it is.
+  final ValueListenable<Key?> draggedItemKeyNotifier;
+
+  /// Notifier of the key of the last item added to the checklist, to focus this item when it is.
+  final ValueListenable<Key?> addedItemKeyNotifier;
 
   /// Custom implementation of [ChecklistLocalizations] to replace the default ones or provide unavailable ones.
   final ChecklistLocalizations localizations;
@@ -132,7 +140,7 @@ class _ItemTileState extends State<ItemTile> {
       child: FocusScope(
         onFocusChange: onFocusChange,
         child: ValueListenableBuilder(
-            valueListenable: draggedItemKeyNotifier,
+            valueListenable: widget.draggedItemKeyNotifier,
             builder: (context, draggedItemKey, child) {
               final tileColor = draggedItemKey == widget.key
                   ? Theme.of(context).colorScheme.surfaceContainerHigh
@@ -146,7 +154,7 @@ class _ItemTileState extends State<ItemTile> {
                   onChanged: widget.enabled ? onToggled : null,
                 ),
                 title: ValueListenableBuilder(
-                    valueListenable: addedItemKeyNotifier,
+                    valueListenable: widget.addedItemKeyNotifier,
                     builder: (context, addedItemKey, child) {
                       // Make the text field read only if the checklist widget is disabled,
                       // or if the item is checked and the checklist widget is set to make checked items read only
