@@ -32,8 +32,8 @@ class Checklist extends StatefulWidget {
     this.checkedReadOnly = false,
     this.autofocusFirstLine = false,
     this.keyboardType = TextInputType.text,
-    this.textInputAction = TextInputAction.none,
-    this.textCapitalization = TextCapitalization.none,
+    this.textInputAction = TextInputAction.newline,
+    this.textCapitalization = TextCapitalization.sentences,
     required this.onChanged,
     this.localizations,
   });
@@ -53,12 +53,18 @@ class Checklist extends StatefulWidget {
   final bool autofocusFirstLine;
 
   /// The `TextInputType` of the checklist items `TextField`.
+  ///
+  /// Defaults to `TextInputType.text`.
   final TextInputType keyboardType;
 
   /// The `TextInputAction` of the checklist items `TextField`.
+  ///
+  /// Defaults to `TextInputAction.newline`.
   final TextInputAction textInputAction;
 
   /// The `TextCapitalization` of the checklist items `TextField`.
+  ///
+  /// Defaults to `TextCapitalization.sentences`.
   final TextCapitalization textCapitalization;
 
   /// Custom implementation of [ChecklistLocalizations] to replace the default ones or provide unavailable ones.
@@ -71,7 +77,8 @@ class Checklist extends StatefulWidget {
   final void Function(List<ChecklistLine>) onChanged;
 
   /// Focus node of the placeholder `TextField` that keeps the keyboard on screen when adding a new item.
-  static final keepKeyboardFocusNode = FocusNode(debugLabel: 'Keep keyboard on screen');
+  static final keepKeyboardFocusNode =
+      FocusNode(debugLabel: 'Keep keyboard on screen');
 
   @override
   State<Checklist> createState() => _ChecklistState();
@@ -171,7 +178,9 @@ class _ChecklistState extends State<Checklist> {
     final duration = kReleaseMode ? Duration(milliseconds: 150) : null;
 
     // Use the custom user localizations, or else those for the current locale, or else those in english
-    final localizations = widget.localizations ?? ChecklistLocalizations.of(context) ?? ChecklistLocalizationsEn();
+    final localizations = widget.localizations ??
+        ChecklistLocalizations.of(context) ??
+        ChecklistLocalizationsEn();
 
     return widget.enabled
         ? ListView(
@@ -190,6 +199,9 @@ class _ChecklistState extends State<Checklist> {
                     value: values[index],
                     checkedReadOnly: widget.checkedReadOnly,
                     autofocus: widget.autofocusFirstLine && index == 0,
+                    keyboardType: widget.keyboardType,
+                    textInputAction: widget.textInputAction,
+                    textCapitalization: widget.textCapitalization,
                     onChanged: updateText,
                     onToggled: updateToggled,
                     onSubmitted: addItem,
