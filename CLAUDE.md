@@ -6,6 +6,8 @@ Apps display and store their checklists with it: treat any change of a public si
 
 ## Commands
 
+The Flutter version is pinned in `.fvmrc`. Locally, run Flutter and Dart through `fvm` (`fvm flutter ...`, `fvm dart ...`).
+
 - Install: `flutter pub get` (and in `example`).
 - Format: `dart format <files>` (default width, 80).
 - Analyze: `dart analyze --fatal-infos`.
