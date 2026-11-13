@@ -82,14 +82,6 @@ class Checklist extends StatefulWidget {
   /// The list is a copy, that the checklist doesn't change afterwards.
   final void Function(List<ChecklistLine>) onChanged;
 
-  /// Focus node of the placeholder `TextField` that keeps the keyboard on screen when adding a new item.
-  @Deprecated(
-    'Each checklist now has its own focus node: this one is no longer used. '
-    'It will be removed in the next major version.',
-  )
-  static final keepKeyboardFocusNode =
-      FocusNode(debugLabel: 'Keep keyboard on screen');
-
   @override
   State<Checklist> createState() => _ChecklistState();
 }
