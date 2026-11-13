@@ -2,7 +2,7 @@
 
 Flutter package published on pub.dev: a `Checklist` widget with checkable, editable and reorderable items. BSD-3-Clause.
 
-Its main user is Material Notes (`maelchiotti/LocalMaterialNotes`), whose checklist notes store the items as two lists (`checkboxes` and `texts`) built from `ChecklistLine`: check that a change keeps working there, and treat any change of a public signature or of the default behavior as breaking.
+Apps display and store their checklists with it: treat any change of a public signature or of the default behavior as breaking.
 
 ## Commands
 
