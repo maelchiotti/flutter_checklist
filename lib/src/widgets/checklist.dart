@@ -43,6 +43,15 @@ class Checklist extends StatefulWidget {
   ///
   /// They are only read when the checklist is created: changing them afterwards has no effect. To reset the checklist
   /// with new lines, also give it a new `key`, for example a `ValueKey` of the lines or of their source.
+  ///
+  /// ```dart
+  /// Checklist(
+  ///   // A new key creates a new checklist from the new lines
+  ///   key: ValueKey(note.id),
+  ///   lines: note.lines,
+  ///   onChanged: (lines) => note.lines = lines,
+  /// )
+  /// ```
   final List<ChecklistLine> lines;
 
   /// Whether this checklist is enabled and allow editing its items.
