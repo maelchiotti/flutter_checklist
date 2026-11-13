@@ -27,7 +27,7 @@ Running `flutter pub get` with a newer Flutter rewrites `example/pubspec.lock`: 
 
 ## Code style
 
-- `flutter_lints` with `strict-inference`, `public_member_api_docs`, `always_put_control_body_on_new_line`, `curly_braces_in_flow_control_structures`.
+- `flutter_lints` with `strict-inference`, `public_member_api_docs`, `always_use_package_imports`, `always_put_control_body_on_new_line`, `curly_braces_in_flow_control_structures` and `unawaited_futures`, as in Material Notes.
 - Package imports (`package:flutter_checklist/...`).
 - Every public member has a `///` doc comment, and every constructor parameter is documented on its field and summed up in the constructor comment.
 - New options have a default that keeps the current behavior, and are shown in `example/lib/main.dart` and the README.
