@@ -12,6 +12,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Keep the focus node and the notifiers per checklist, so that several checklists don't interfere.
 - Pass a copy of the lines to `onChanged`.
 - Document that the lines are only read when the checklist is created.
+- Fix the focus not being given to the item added after a line that is not the last one.
 
 ## 1.5.5
 
