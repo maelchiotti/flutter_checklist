@@ -1,5 +1,4 @@
-import 'package:animated_reorderable_list/animated_reorderable_list.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_checklist/checklist.dart';
 import 'package:flutter_checklist/l10n/checklist_localizations/checklist_localizations_en.g.dart';
@@ -100,8 +99,9 @@ class _ChecklistState extends State<Checklist> {
   late final List<ChecklistLine> values;
 
   /// Focus node of the placeholder `TextField` that keeps the keyboard on screen when adding a new item.
-  final keepKeyboardFocusNode =
-      FocusNode(debugLabel: 'Keep keyboard on screen');
+  final keepKeyboardFocusNode = FocusNode(
+    debugLabel: 'Keep keyboard on screen',
+  );
 
   /// Notifier of the key of the item being dragged, or `null` if none is.
   final draggedItemKeyNotifier = ValueNotifier<Key?>(null);
@@ -132,7 +132,7 @@ class _ChecklistState extends State<Checklist> {
     draggedItemKeyNotifier.value = key;
   }
 
-  void onReorder(int oldIndex, int newIndex) {
+  void onReorderItem(int oldIndex, int newIndex) {
     setState(() {
       final item = keys.removeAt(oldIndex);
       final value = values.removeAt(oldIndex);
@@ -196,58 +196,51 @@ class _ChecklistState extends State<Checklist> {
 
   @override
   Widget build(BuildContext context) {
-    // Changing the duration is buggy in debug mode
-    final duration = kReleaseMode ? Duration(milliseconds: 150) : null;
-
     // Use the custom user localizations, or else those for the current locale, or else those in english
     final localizations = widget.localizations ??
         ChecklistLocalizations.of(context) ??
         ChecklistLocalizationsEn();
 
     return widget.enabled
-        ? ListView(
-            children: [
-              KeepKeyboardOnScreen(
-                focusNode: keepKeyboardFocusNode,
-                keyboardType: widget.keyboardType,
-                textInputAction: widget.textInputAction,
-                textCapitalization: widget.textCapitalization,
-              ),
-              AnimatedReorderableListView(
-                items: keys,
-                itemBuilder: (context, index) {
-                  return ItemTile(
-                    key: keys[index],
-                    value: values[index],
-                    checkedReadOnly: widget.checkedReadOnly,
-                    autofocus: widget.autofocusFirstLine && index == 0,
-                    keyboardType: widget.keyboardType,
-                    textInputAction: widget.textInputAction,
-                    textCapitalization: widget.textCapitalization,
-                    draggedItemKeyNotifier: draggedItemKeyNotifier,
-                    addedItemKeyNotifier: addedItemKeyNotifier,
-                    onChanged: updateText,
-                    onToggled: updateToggled,
-                    onSubmitted: addItem,
-                    onRemove: removeItem,
-                    localizations: localizations,
-                  );
-                },
-                isSameItem: (Key key, Key otherKey) => key == otherKey,
-                shrinkWrap: true,
-                physics: ClampingScrollPhysics(),
-                dragStartDelay: Duration(milliseconds: 250),
-                onReorderStart: onReorderStart,
-                onReorder: onReorder,
-                onReorderEnd: onReorderEnd,
-                insertDuration: duration,
-                removeDuration: duration,
-              ),
-              NewItemButton(
-                onTap: () => addItem(keys.lastOrNull),
-                localizations: localizations,
-              ),
-            ],
+        ? ReorderableListView.builder(
+            header: KeepKeyboardOnScreen(
+              focusNode: keepKeyboardFocusNode,
+              keyboardType: widget.keyboardType,
+              textInputAction: widget.textInputAction,
+              textCapitalization: widget.textCapitalization,
+            ),
+            footer: NewItemButton(
+              onTap: () => addItem(keys.lastOrNull),
+              localizations: localizations,
+            ),
+            itemCount: keys.length,
+            itemBuilder: (context, index) {
+              return _DelayedDragStartListener(
+                key: keys[index],
+                index: index,
+                child: ItemTile(
+                  key: keys[index],
+                  value: values[index],
+                  checkedReadOnly: widget.checkedReadOnly,
+                  autofocus: widget.autofocusFirstLine && index == 0,
+                  keyboardType: widget.keyboardType,
+                  textInputAction: widget.textInputAction,
+                  textCapitalization: widget.textCapitalization,
+                  draggedItemKeyNotifier: draggedItemKeyNotifier,
+                  addedItemKeyNotifier: addedItemKeyNotifier,
+                  onChanged: updateText,
+                  onToggled: updateToggled,
+                  onSubmitted: addItem,
+                  onRemove: removeItem,
+                  localizations: localizations,
+                ),
+              );
+            },
+            // The whole item starts the drag after a short press, instead of the default handles
+            buildDefaultDragHandles: false,
+            onReorderStart: onReorderStart,
+            onReorderItem: onReorderItem,
+            onReorderEnd: onReorderEnd,
           )
         : ListView.builder(
             itemCount: keys.length,
@@ -262,5 +255,26 @@ class _ChecklistState extends State<Checklist> {
               );
             },
           );
+  }
+}
+
+/// Starts dragging an item after it is pressed for [_dragStartDelay].
+///
+/// Same as [ReorderableDelayedDragStartListener], with a shorter delay than the default long press.
+class _DelayedDragStartListener extends ReorderableDragStartListener {
+  const _DelayedDragStartListener({
+    super.key,
+    required super.child,
+    required super.index,
+  });
+
+  static const _dragStartDelay = Duration(milliseconds: 250);
+
+  @override
+  MultiDragGestureRecognizer createRecognizer() {
+    return DelayedMultiDragGestureRecognizer(
+      delay: _dragStartDelay,
+      debugOwner: this,
+    );
   }
 }

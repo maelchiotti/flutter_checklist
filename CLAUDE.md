@@ -22,7 +22,7 @@ Running `flutter pub get` with a newer Flutter rewrites `example/pubspec.lock`: 
 ## Structure
 
 - `lib/checklist.dart` exports the public API: `Checklist`, `ChecklistLine` and `ChecklistLocalizations`.
-- `lib/src/widgets/checklist.dart`: the `Checklist` widget. It keeps a `UniqueKey` per line next to the values, renders them with `animated_reorderable_list`, and calls `onChanged` with the whole new list after each change (added, removed, toggled, edited, reordered).
+- `lib/src/widgets/checklist.dart`: the `Checklist` widget. It keeps a `UniqueKey` per line next to the values, renders them with Flutter's `ReorderableListView.builder` (the hidden field as `header`, the new item button as `footer`, the whole item dragged after a 250 ms press), and calls `onChanged` with the whole new list after each change (added, removed, toggled, edited, reordered).
 - `lib/src/widgets/item_tile.dart`: one line (checkbox, text field, drag handle, delete button). `new_item_button.dart`: the button that adds a line. `keep_keyboard_on_screen.dart`: a hidden text field that keeps the keyboard open while a new line gets the focus.
 - `lib/src/utils`: `ChecklistLine` (`({String text, bool toggled})`), the global notifiers of the dragged and added keys, the subdued alpha, color extensions.
 - `lib/l10n/translations`: `checklist_en.arb` (source) and `checklist_fr.arb`. Every new text goes in both, with an `@key` description. Users can pass their own `ChecklistLocalizations`; missing locales fall back to English.

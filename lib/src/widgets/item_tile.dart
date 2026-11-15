@@ -83,7 +83,6 @@ class ItemTile extends StatefulWidget {
 class _ItemTileState extends State<ItemTile> {
   late bool toggled;
   late TextEditingController textController;
-  final focusNode = FocusNode();
   late bool hasFocus;
 
   @override
@@ -95,36 +94,6 @@ class _ItemTileState extends State<ItemTile> {
     toggled = widget.value.toggled;
     textController = TextEditingController(text: widget.value.text);
     hasFocus = false;
-
-    // The `autofocus` of the text field is ignored when the item is inserted in the middle of the checklist,
-    // so the focus is requested explicitly once the item can receive it.
-    if (widget.addedItemKeyNotifier.value == widget.key) {
-      requestFocusWhenPossible();
-    }
-  }
-
-  @override
-  void dispose() {
-    focusNode.dispose();
-    textController.dispose();
-
-    super.dispose();
-  }
-
-  /// Requests the focus for the text field, retrying for a few frames while it can't receive it yet
-  /// (the item is still being inserted in the list).
-  void requestFocusWhenPossible([int attempts = 10]) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-
-      if (focusNode.canRequestFocus) {
-        focusNode.requestFocus();
-      } else if (attempts > 0) {
-        requestFocusWhenPossible(attempts - 1);
-      }
-    });
   }
 
   void onToggled(bool? toggled) {
@@ -199,7 +168,6 @@ class _ItemTileState extends State<ItemTile> {
 
                       return TextField(
                         controller: textController,
-                        focusNode: focusNode,
                         readOnly: readonly,
                         autofocus: autofocus,
                         keyboardType: widget.keyboardType,
