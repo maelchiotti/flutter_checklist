@@ -238,6 +238,20 @@ class _ChecklistState extends State<Checklist> {
             },
             // The whole item starts the drag after a short press, instead of the default handles
             buildDefaultDragHandles: false,
+            // A lower elevation than the default one (6) for the dragged item
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  return Material(
+                    elevation: Curves.easeInOut.transform(animation.value) * 2,
+                    color: Colors.transparent,
+                    child: child,
+                  );
+                },
+                child: child,
+              );
+            },
             onReorderStart: onReorderStart,
             onReorderItem: onReorderItem,
             onReorderEnd: onReorderEnd,
