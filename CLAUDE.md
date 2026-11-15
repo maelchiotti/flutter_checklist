@@ -13,7 +13,7 @@ The Flutter version is pinned in `.fvmrc`. Locally, run Flutter and Dart through
 - Analyze: `dart analyze --fatal-infos`.
 - Localizations: `flutter gen-l10n` (config in `l10n.yaml`). The generated files of `lib/l10n/checklist_localizations` are committed: regenerate and commit them with each ARB change, never edit them by hand.
 - Example: `cd example && flutter run`.
-- Publish: `dart pub publish --dry-run` only; the maintainer publishes (`make publish`).
+- Publish: `dart pub publish --dry-run` only; the maintainer publishes (`dart pub publish`).
 
 There are no tests. The `check` skill runs every check and the `release` skill prepares a version.
 
