@@ -4,13 +4,13 @@ description: "A widget to display a checklist with checkable and reorderable ite
 repository: https://github.com/maelchiotti/flutter_checklist
 issue_tracker: https://github.com/maelchiotti/flutter_checklist/issues
 
-version: 1.5.5
+version: 2.0.0
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.41.0"
 
 dependencies:
-  animated_reorderable_list: ^1.3.0
   flutter:
     sdk: flutter
   flutter_localizations:

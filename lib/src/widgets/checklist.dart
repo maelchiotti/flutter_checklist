@@ -1,9 +1,7 @@
-import 'package:animated_reorderable_list/animated_reorderable_list.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_checklist/checklist.dart';
 import 'package:flutter_checklist/l10n/checklist_localizations/checklist_localizations_en.g.dart';
-import 'package:flutter_checklist/src/utils/constants.dart';
 import 'package:flutter_checklist/src/widgets/item_tile.dart';
 import 'package:flutter_checklist/src/widgets/keep_keyboard_on_screen.dart';
 import 'package:flutter_checklist/src/widgets/new_item_button.dart';
@@ -13,9 +11,11 @@ class Checklist extends StatefulWidget {
   /// A checklist with a list of [lines].
   ///
   /// The [lines] correspond to the entries in the checklist, with a text and whether they are toggled.
+  /// They are only read when the checklist is created: to replace them afterwards, also give the checklist a new
+  /// [key].
   ///
   /// On each change in the checklist (a line is added, removed, toggled or its text is changed),
-  /// the [onChanged] callback is fired with the new list of lines.
+  /// the [onChanged] callback is fired with a copy of the new list of lines.
   ///
   /// Set [enabled] to false to disable editing and toggling of the lines.
   ///
@@ -32,13 +32,25 @@ class Checklist extends StatefulWidget {
     this.checkedReadOnly = false,
     this.autofocusFirstLine = false,
     this.keyboardType = TextInputType.text,
-    this.textInputAction = TextInputAction.none,
-    this.textCapitalization = TextCapitalization.none,
+    this.textInputAction = TextInputAction.newline,
+    this.textCapitalization = TextCapitalization.sentences,
     required this.onChanged,
     this.localizations,
   });
 
   /// The list of entries to display in the checklist, with a text and whether they are toggled.
+  ///
+  /// They are only read when the checklist is created: changing them afterwards has no effect. To reset the checklist
+  /// with new lines, also give it a new `key`, for example a `ValueKey` of the lines or of their source.
+  ///
+  /// ```dart
+  /// Checklist(
+  ///   // A new key creates a new checklist from the new lines
+  ///   key: ValueKey(note.id),
+  ///   lines: note.lines,
+  ///   onChanged: (lines) => note.lines = lines,
+  /// )
+  /// ```
   final List<ChecklistLine> lines;
 
   /// Whether this checklist is enabled and allow editing its items.
@@ -53,12 +65,18 @@ class Checklist extends StatefulWidget {
   final bool autofocusFirstLine;
 
   /// The `TextInputType` of the checklist items `TextField`.
+  ///
+  /// Defaults to `TextInputType.text`.
   final TextInputType keyboardType;
 
   /// The `TextInputAction` of the checklist items `TextField`.
+  ///
+  /// Defaults to `TextInputAction.newline`.
   final TextInputAction textInputAction;
 
   /// The `TextCapitalization` of the checklist items `TextField`.
+  ///
+  /// Defaults to `TextCapitalization.sentences`.
   final TextCapitalization textCapitalization;
 
   /// Custom implementation of [ChecklistLocalizations] to replace the default ones or provide unavailable ones.
@@ -68,10 +86,9 @@ class Checklist extends StatefulWidget {
   final ChecklistLocalizations? localizations;
 
   /// Called when a line in the checklist is added, removed, toggled or its text is changed with the new list of lines.
+  ///
+  /// The list is a copy, that the checklist doesn't change afterwards.
   final void Function(List<ChecklistLine>) onChanged;
-
-  /// Focus node of the placeholder `TextField` that keeps the keyboard on screen when adding a new item.
-  static final keepKeyboardFocusNode = FocusNode(debugLabel: 'Keep keyboard on screen');
 
   @override
   State<Checklist> createState() => _ChecklistState();
@@ -80,6 +97,17 @@ class Checklist extends StatefulWidget {
 class _ChecklistState extends State<Checklist> {
   late final List<Key> keys;
   late final List<ChecklistLine> values;
+
+  /// Focus node of the placeholder `TextField` that keeps the keyboard on screen when adding a new item.
+  final keepKeyboardFocusNode = FocusNode(
+    debugLabel: 'Keep keyboard on screen',
+  );
+
+  /// Notifier of the key of the item being dragged, or `null` if none is.
+  final draggedItemKeyNotifier = ValueNotifier<Key?>(null);
+
+  /// Notifier of the key of the last added item, or `null` if none was added.
+  final addedItemKeyNotifier = ValueNotifier<Key?>(null);
 
   @override
   void initState() {
@@ -91,10 +119,11 @@ class _ChecklistState extends State<Checklist> {
 
   @override
   void dispose() {
-    super.dispose();
+    keepKeyboardFocusNode.dispose();
+    draggedItemKeyNotifier.dispose();
+    addedItemKeyNotifier.dispose();
 
-    draggedItemKeyNotifier.value = null;
-    addedItemKeyNotifier.value = null;
+    super.dispose();
   }
 
   void onReorderStart(int index) {
@@ -103,7 +132,7 @@ class _ChecklistState extends State<Checklist> {
     draggedItemKeyNotifier.value = key;
   }
 
-  void onReorder(int oldIndex, int newIndex) {
+  void onReorderItem(int oldIndex, int newIndex) {
     setState(() {
       final item = keys.removeAt(oldIndex);
       final value = values.removeAt(oldIndex);
@@ -112,7 +141,7 @@ class _ChecklistState extends State<Checklist> {
       values.insert(newIndex, value);
     });
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   void onReorderEnd(int index) {
@@ -125,7 +154,7 @@ class _ChecklistState extends State<Checklist> {
 
     values[index] = value;
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   void updateText(Key key, String text) {
@@ -134,11 +163,11 @@ class _ChecklistState extends State<Checklist> {
 
     values[index] = value;
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   void addItem(Key? key) {
-    Checklist.keepKeyboardFocusNode.requestFocus();
+    keepKeyboardFocusNode.requestFocus();
 
     setState(() {
       final index = key != null ? keys.indexWhere((k) => k == key) + 1 : 0;
@@ -151,7 +180,7 @@ class _ChecklistState extends State<Checklist> {
       addedItemKeyNotifier.value = newKey;
     });
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   void removeItem(Key key) {
@@ -162,56 +191,70 @@ class _ChecklistState extends State<Checklist> {
       values.removeAt(index);
     });
 
-    widget.onChanged(values);
+    widget.onChanged(List.of(values));
   }
 
   @override
   Widget build(BuildContext context) {
-    // Changing the duration is buggy in debug mode
-    final duration = kReleaseMode ? Duration(milliseconds: 150) : null;
-
     // Use the custom user localizations, or else those for the current locale, or else those in english
-    final localizations = widget.localizations ?? ChecklistLocalizations.of(context) ?? ChecklistLocalizationsEn();
+    final localizations = widget.localizations ??
+        ChecklistLocalizations.of(context) ??
+        ChecklistLocalizationsEn();
 
     return widget.enabled
-        ? ListView(
-            children: [
-              KeepKeyboardOnScreen(
-                focusNode: Checklist.keepKeyboardFocusNode,
-                keyboardType: widget.keyboardType,
-                textInputAction: widget.textInputAction,
-                textCapitalization: widget.textCapitalization,
-              ),
-              AnimatedReorderableListView(
-                items: keys,
-                itemBuilder: (context, index) {
-                  return ItemTile(
-                    key: keys[index],
-                    value: values[index],
-                    checkedReadOnly: widget.checkedReadOnly,
-                    autofocus: widget.autofocusFirstLine && index == 0,
-                    onChanged: updateText,
-                    onToggled: updateToggled,
-                    onSubmitted: addItem,
-                    onRemove: removeItem,
-                    localizations: localizations,
+        ? ReorderableListView.builder(
+            header: KeepKeyboardOnScreen(
+              focusNode: keepKeyboardFocusNode,
+              keyboardType: widget.keyboardType,
+              textInputAction: widget.textInputAction,
+              textCapitalization: widget.textCapitalization,
+            ),
+            footer: NewItemButton(
+              onTap: () => addItem(keys.lastOrNull),
+              localizations: localizations,
+            ),
+            itemCount: keys.length,
+            itemBuilder: (context, index) {
+              return _DelayedDragStartListener(
+                key: keys[index],
+                index: index,
+                child: ItemTile(
+                  key: keys[index],
+                  value: values[index],
+                  checkedReadOnly: widget.checkedReadOnly,
+                  autofocus: widget.autofocusFirstLine && index == 0,
+                  keyboardType: widget.keyboardType,
+                  textInputAction: widget.textInputAction,
+                  textCapitalization: widget.textCapitalization,
+                  draggedItemKeyNotifier: draggedItemKeyNotifier,
+                  addedItemKeyNotifier: addedItemKeyNotifier,
+                  onChanged: updateText,
+                  onToggled: updateToggled,
+                  onSubmitted: addItem,
+                  onRemove: removeItem,
+                  localizations: localizations,
+                ),
+              );
+            },
+            // The whole item starts the drag after a short press, instead of the default handles
+            buildDefaultDragHandles: false,
+            // A lower elevation than the default one (6) for the dragged item
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  return Material(
+                    elevation: Curves.easeInOut.transform(animation.value) * 2,
+                    color: Colors.transparent,
+                    child: child,
                   );
                 },
-                isSameItem: (Key key, Key otherKey) => key == otherKey,
-                shrinkWrap: true,
-                physics: ClampingScrollPhysics(),
-                dragStartDelay: Duration(milliseconds: 250),
-                onReorderStart: onReorderStart,
-                onReorder: onReorder,
-                onReorderEnd: onReorderEnd,
-                insertDuration: duration,
-                removeDuration: duration,
-              ),
-              NewItemButton(
-                onTap: () => addItem(keys.lastOrNull),
-                localizations: localizations,
-              ),
-            ],
+                child: child,
+              );
+            },
+            onReorderStart: onReorderStart,
+            onReorderItem: onReorderItem,
+            onReorderEnd: onReorderEnd,
           )
         : ListView.builder(
             itemCount: keys.length,
@@ -220,9 +263,32 @@ class _ChecklistState extends State<Checklist> {
                 key: keys[index],
                 value: values[index],
                 enabled: false,
+                draggedItemKeyNotifier: draggedItemKeyNotifier,
+                addedItemKeyNotifier: addedItemKeyNotifier,
                 localizations: localizations,
               );
             },
           );
+  }
+}
+
+/// Starts dragging an item after it is pressed for [_dragStartDelay].
+///
+/// Same as [ReorderableDelayedDragStartListener], with a shorter delay than the default long press.
+class _DelayedDragStartListener extends ReorderableDragStartListener {
+  const _DelayedDragStartListener({
+    super.key,
+    required super.child,
+    required super.index,
+  });
+
+  static const _dragStartDelay = Duration(milliseconds: 250);
+
+  @override
+  MultiDragGestureRecognizer createRecognizer() {
+    return DelayedMultiDragGestureRecognizer(
+      delay: _dragStartDelay,
+      debugOwner: this,
+    );
   }
 }

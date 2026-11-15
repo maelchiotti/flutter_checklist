@@ -32,3 +32,6 @@ build/
 lib/l10n/untranslated.txt
 
 example/android/app/.cxx
+
+# FVM Version Cache
+.fvm/

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0
+
+- **Breaking:** remove `Checklist.keepKeyboardFocusNode`, each checklist now has its own focus node.
+- **Breaking:** require Flutter 3.41 or later.
+- Apply the `keyboardType`, `textInputAction` and `textCapitalization` options to the items, with `TextInputAction.newline` and `TextCapitalization.sentences` as the new defaults to keep the current behavior.
+- Keep the focus node and the notifiers per checklist, so that several checklists don't interfere.
+- Pass a copy of the lines to `onChanged`.
+- Document that the lines are only read when the checklist is created.
+- Display the items with Flutter's `ReorderableListView` instead of `animated_reorderable_list`, which fixes the focus not being given to an item added after a line that is not the last one, and only builds the visible items. Adding and removing an item are no longer animated.
+
 ## 1.5.5
 
 - Add options to customize the keyboard of the checklist items text field.
