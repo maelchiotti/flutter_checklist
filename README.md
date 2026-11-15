@@ -41,7 +41,7 @@ A checklist can be made read only by setting the `enabled` parameter to `false`,
 // The list of five ChecklistLine to display with their text and whether they are toggled
 final lines = List.generate(
   5,
-  (index) => (text: 'Line ${index + 1}', toggled: false),
+      (index) => (text: 'Line ${index + 1}', toggled: false),
 );
 
 // The function to execute when the checklist is modified, with the new list of ChecklistLine
@@ -50,9 +50,16 @@ void onChanged(List<ChecklistLine> lines) {
 }
 
 // The checklist widget
-Checklist(
-  lines: lines,
-  onChanged: onChanged,
+Checklist
+(
+lines
+:
+lines
+,
+onChanged
+:
+onChanged
+,
 );
 ```
 
@@ -63,11 +70,12 @@ Checklist(
 This package supports localization. To enable it in your app, add the localizations delegates to your `MaterialApp`:
 
 ```dart
-MaterialApp(
-  localizationsDelegates: [
-    ChecklistLocalizations.delegate,
-    // Any other localizations delegates, from your app or other packages
-  ],
+MaterialApp
+(
+localizationsDelegates: [
+ChecklistLocalizations.delegate,
+// Any other localizations delegates, from your app or other packages
+],
 );
 ```
 
@@ -83,10 +91,13 @@ To add support for a new localization or improve an existing one, please open an
 To provide your own localizations (to replace the embedded ones are provide missing ones), implement the `ChecklistLocalizations` class (for examples, look at the [generated ones](https://github.com/maelchiotti/flutter_checklist/tree/main/lib/l10n/checklist_localizations)) and pass it to the `localizations` parameter:
 
 ```dart
-Checklist(
-  lines: lines,
-  onChanged: onChanged,
-  localizations: CustomChecklistLocalizations(),
+Checklist
+(
+lines: lines,
+onChanged: onChanged,
+localizations: CustomChecklistLocalizations(
+)
+,
 )
 ```
 
