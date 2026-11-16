@@ -19,6 +19,8 @@ class Checklist extends StatefulWidget {
   ///
   /// Set [enabled] to false to disable editing and toggling of the lines.
   ///
+  /// Set [toggleable] to allow toggling the lines when the checklist is disabled.
+  ///
   /// Set [checkedReadOnly] to make checked lines read only.
   ///
   /// Set [autofocusFirstLine] to automatically focus the first line
@@ -29,6 +31,7 @@ class Checklist extends StatefulWidget {
     super.key,
     required this.lines,
     this.enabled = true,
+    this.toggleable = false,
     this.checkedReadOnly = false,
     this.autofocusFirstLine = false,
     this.keyboardType = TextInputType.text,
@@ -57,6 +60,15 @@ class Checklist extends StatefulWidget {
   ///
   /// Defaults to `true`.
   final bool enabled;
+
+  /// Whether the lines of this checklist can be toggled when it is not [enabled].
+  ///
+  /// When the checklist is not [enabled] but is toggleable, its lines can be toggled, but not edited, removed, added or
+  /// reordered: for example a checklist in a reading mode. When the checklist is [enabled], its lines can always be
+  /// toggled.
+  ///
+  /// Defaults to `false`.
+  final bool toggleable;
 
   /// Whether the checked items should be read only.
   final bool checkedReadOnly;
@@ -263,6 +275,8 @@ class _ChecklistState extends State<Checklist> {
                 key: keys[index],
                 value: values[index],
                 enabled: false,
+                toggleable: widget.toggleable,
+                onToggled: updateToggled,
                 draggedItemKeyNotifier: draggedItemKeyNotifier,
                 addedItemKeyNotifier: addedItemKeyNotifier,
                 localizations: localizations,

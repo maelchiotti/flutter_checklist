@@ -10,6 +10,7 @@ class ItemTile extends StatefulWidget {
     super.key,
     required this.value,
     this.enabled = true,
+    this.toggleable = false,
     this.checkedReadOnly = false,
     this.autofocus = false,
     this.keyboardType = TextInputType.text,
@@ -22,7 +23,7 @@ class ItemTile extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.onRemove,
-  }) : assert(
+  })  : assert(
           (enabled &&
                   onToggled != null &&
                   onChanged != null &&
@@ -30,6 +31,10 @@ class ItemTile extends StatefulWidget {
                   onRemove != null) ||
               !enabled,
           'If the item is enabled, all callbacks must not be null',
+        ),
+        assert(
+          !toggleable || onToggled != null,
+          'If the item is toggleable, the onToggled callback must not be null',
         );
 
   /// The value of this checklist item, with the text and whether it is toggled.
@@ -39,6 +44,11 @@ class ItemTile extends StatefulWidget {
   ///
   /// Defaults to `true`.
   final bool enabled;
+
+  /// Whether the checkbox of this item can be toggled even when it is not [enabled].
+  ///
+  /// Defaults to `false`.
+  final bool toggleable;
 
   /// Whether this item should be read only if checked.
   final bool checkedReadOnly;
@@ -151,7 +161,8 @@ class _ItemTileState extends State<ItemTile> {
                 leading: Checkbox(
                   value: toggled,
                   visualDensity: VisualDensity.compact,
-                  onChanged: widget.enabled ? onToggled : null,
+                  onChanged:
+                      widget.enabled || widget.toggleable ? onToggled : null,
                 ),
                 title: ValueListenableBuilder(
                     valueListenable: widget.addedItemKeyNotifier,
