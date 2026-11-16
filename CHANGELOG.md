@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Remove the focus when a line starts being dragged, to fix the `LeaderLayer anchor must come before FollowerLayer in paint order` assertion when the selection handles of its text field were shown.
+- Fix an error when dragging a line whose text field was focused.
 
 ## 2.0.0 - 2026-11-15
 
