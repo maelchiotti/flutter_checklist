@@ -37,6 +37,10 @@ The list of `ChecklistLine` is only read when the widget is created. To reset th
 
 A checklist can be made read only by setting the `enabled` parameter to `false`, which disables any modification to the checklist lines as well as their reordering.
 
+To still allow toggling the lines of a read only checklist, for example in a reading mode, also set the `toggleable` parameter to `true`: the lines can be checked and unchecked, but not edited, removed, added or reordered.
+
+To also allow reordering the lines of a read only checklist, set the `reorderable` parameter to `true`: the lines can be dragged to another position, but not edited, removed or added. It can be combined with `toggleable`.
+
 ```dart
 // The list of five ChecklistLine to display with their text and whether they are toggled
 final lines = List.generate(

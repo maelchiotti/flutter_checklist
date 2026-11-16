@@ -19,6 +19,10 @@ class Checklist extends StatefulWidget {
   ///
   /// Set [enabled] to false to disable editing and toggling of the lines.
   ///
+  /// Set [toggleable] to allow toggling the lines when the checklist is disabled.
+  ///
+  /// Set [reorderable] to allow reordering the lines when the checklist is disabled.
+  ///
   /// Set [checkedReadOnly] to make checked lines read only.
   ///
   /// Set [autofocusFirstLine] to automatically focus the first line
@@ -29,6 +33,8 @@ class Checklist extends StatefulWidget {
     super.key,
     required this.lines,
     this.enabled = true,
+    this.toggleable = false,
+    this.reorderable = false,
     this.checkedReadOnly = false,
     this.autofocusFirstLine = false,
     this.keyboardType = TextInputType.text,
@@ -57,6 +63,25 @@ class Checklist extends StatefulWidget {
   ///
   /// Defaults to `true`.
   final bool enabled;
+
+  /// Whether the lines of this checklist can be toggled when it is not [enabled].
+  ///
+  /// When the checklist is not [enabled] but is toggleable, its lines can be toggled, but not edited, removed, added or
+  /// reordered, unless [reorderable] is `true`: for example a checklist in a reading mode. When the checklist is
+  /// [enabled], its lines can always be toggled.
+  ///
+  /// Defaults to `false`.
+  final bool toggleable;
+
+  /// Whether the lines of this checklist can be reordered when it is not [enabled].
+  ///
+  /// When the checklist is not [enabled] but is reorderable, its lines can be dragged to another position, but not
+  /// edited, removed or added, and they can only be toggled if [toggleable] is `true`: for example a checklist in a
+  /// reading mode that still lets the user sort its lines. When the checklist is [enabled], its lines can always be
+  /// reordered.
+  ///
+  /// Defaults to `false`.
+  final bool reorderable;
 
   /// Whether the checked items should be read only.
   final bool checkedReadOnly;
@@ -127,6 +152,11 @@ class _ChecklistState extends State<Checklist> {
   }
 
   void onReorderStart(int index) {
+    // Remove the focus, and so the selection handles and toolbar of its text field, which are in the overlay below the
+    // dragged item: the leader layer of the text field would be painted after its follower layers, which fails the
+    // assertion "LeaderLayer anchor must come before FollowerLayer in paint order"
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final key = keys[index];
 
     draggedItemKeyNotifier.value = key;
@@ -201,74 +231,88 @@ class _ChecklistState extends State<Checklist> {
         ChecklistLocalizations.of(context) ??
         ChecklistLocalizationsEn();
 
-    return widget.enabled
-        ? ReorderableListView.builder(
-            header: KeepKeyboardOnScreen(
+    // A disabled checklist that is not reorderable is a plain list, with no drag and drop
+    if (!widget.enabled && !widget.reorderable) {
+      return ListView.builder(
+        itemCount: keys.length,
+        itemBuilder: (context, index) {
+          return ItemTile(
+            key: keys[index],
+            value: values[index],
+            enabled: false,
+            toggleable: widget.toggleable,
+            onToggled: updateToggled,
+            draggedItemKeyNotifier: draggedItemKeyNotifier,
+            addedItemKeyNotifier: addedItemKeyNotifier,
+            localizations: localizations,
+          );
+        },
+      );
+    }
+
+    return ReorderableListView.builder(
+      // The header and the footer only exist when the checklist is enabled, to edit it
+      header: widget.enabled
+          ? KeepKeyboardOnScreen(
               focusNode: keepKeyboardFocusNode,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
               textCapitalization: widget.textCapitalization,
-            ),
-            footer: NewItemButton(
+            )
+          : null,
+      footer: widget.enabled
+          ? NewItemButton(
               onTap: () => addItem(keys.lastOrNull),
               localizations: localizations,
-            ),
-            itemCount: keys.length,
-            itemBuilder: (context, index) {
-              return _DelayedDragStartListener(
-                key: keys[index],
-                index: index,
-                child: ItemTile(
-                  key: keys[index],
-                  value: values[index],
-                  checkedReadOnly: widget.checkedReadOnly,
-                  autofocus: widget.autofocusFirstLine && index == 0,
-                  keyboardType: widget.keyboardType,
-                  textInputAction: widget.textInputAction,
-                  textCapitalization: widget.textCapitalization,
-                  draggedItemKeyNotifier: draggedItemKeyNotifier,
-                  addedItemKeyNotifier: addedItemKeyNotifier,
-                  onChanged: updateText,
-                  onToggled: updateToggled,
-                  onSubmitted: addItem,
-                  onRemove: removeItem,
-                  localizations: localizations,
-                ),
-              );
-            },
-            // The whole item starts the drag after a short press, instead of the default handles
-            buildDefaultDragHandles: false,
-            // A lower elevation than the default one (6) for the dragged item
-            proxyDecorator: (child, index, animation) {
-              return AnimatedBuilder(
-                animation: animation,
-                builder: (context, child) {
-                  return Material(
-                    elevation: Curves.easeInOut.transform(animation.value) * 2,
-                    color: Colors.transparent,
-                    child: child,
-                  );
-                },
-                child: child,
-              );
-            },
-            onReorderStart: onReorderStart,
-            onReorderItem: onReorderItem,
-            onReorderEnd: onReorderEnd,
-          )
-        : ListView.builder(
-            itemCount: keys.length,
-            itemBuilder: (context, index) {
-              return ItemTile(
-                key: keys[index],
-                value: values[index],
-                enabled: false,
-                draggedItemKeyNotifier: draggedItemKeyNotifier,
-                addedItemKeyNotifier: addedItemKeyNotifier,
-                localizations: localizations,
-              );
-            },
-          );
+            )
+          : null,
+      itemCount: keys.length,
+      itemBuilder: (context, index) {
+        return _DelayedDragStartListener(
+          key: keys[index],
+          index: index,
+          child: ItemTile(
+            key: keys[index],
+            value: values[index],
+            enabled: widget.enabled,
+            toggleable: widget.toggleable,
+            reorderable: widget.reorderable,
+            checkedReadOnly: widget.checkedReadOnly,
+            autofocus:
+                widget.enabled && widget.autofocusFirstLine && index == 0,
+            keyboardType: widget.keyboardType,
+            textInputAction: widget.textInputAction,
+            textCapitalization: widget.textCapitalization,
+            draggedItemKeyNotifier: draggedItemKeyNotifier,
+            addedItemKeyNotifier: addedItemKeyNotifier,
+            onChanged: widget.enabled ? updateText : null,
+            onToggled: updateToggled,
+            onSubmitted: widget.enabled ? addItem : null,
+            onRemove: widget.enabled ? removeItem : null,
+            localizations: localizations,
+          ),
+        );
+      },
+      // The whole item starts the drag after a short press, instead of the default handles
+      buildDefaultDragHandles: false,
+      // A lower elevation than the default one (6) for the dragged item
+      proxyDecorator: (child, index, animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) {
+            return Material(
+              elevation: Curves.easeInOut.transform(animation.value) * 2,
+              color: Colors.transparent,
+              child: child,
+            );
+          },
+          child: child,
+        );
+      },
+      onReorderStart: onReorderStart,
+      onReorderItem: onReorderItem,
+      onReorderEnd: onReorderEnd,
+    );
   }
 }
 
