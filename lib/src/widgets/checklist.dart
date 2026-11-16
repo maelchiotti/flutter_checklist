@@ -67,8 +67,8 @@ class Checklist extends StatefulWidget {
   /// Whether the lines of this checklist can be toggled when it is not [enabled].
   ///
   /// When the checklist is not [enabled] but is toggleable, its lines can be toggled, but not edited, removed, added or
-  /// reordered: for example a checklist in a reading mode. When the checklist is [enabled], its lines can always be
-  /// toggled.
+  /// reordered, unless [reorderable] is `true`: for example a checklist in a reading mode. When the checklist is
+  /// [enabled], its lines can always be toggled.
   ///
   /// Defaults to `false`.
   final bool toggleable;
