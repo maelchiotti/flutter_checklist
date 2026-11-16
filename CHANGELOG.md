@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Add the `toggleable` option to allow toggling the lines of a disabled checklist, without editing, removing, adding or reordering them.
 - Add the `reorderable` option to allow reordering the lines of a disabled checklist, without editing, removing or adding them.
 
+### Fixed
+
+- Remove the focus when a line starts being dragged, to fix the `LeaderLayer anchor must come before FollowerLayer in paint order` assertion when the selection handles of its text field were shown.
+
 ## 2.0.0 - 2026-11-15
 
 ### BREAKING CHANGES

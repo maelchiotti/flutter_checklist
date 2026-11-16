@@ -152,6 +152,11 @@ class _ChecklistState extends State<Checklist> {
   }
 
   void onReorderStart(int index) {
+    // Remove the focus, and so the selection handles and toolbar of its text field, which are in the overlay below the
+    // dragged item: the leader layer of the text field would be painted after its follower layers, which fails an
+    // assertion
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final key = keys[index];
 
     draggedItemKeyNotifier.value = key;
