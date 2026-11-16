@@ -21,6 +21,9 @@ class _MyAppState extends State<MyApp> {
   /// Whether the lines can be toggled when the checklist is disabled.
   bool toggleable = false;
 
+  /// Whether the lines can be reordered when the checklist is disabled.
+  bool reorderable = false;
+
   final lines = List.generate(
     5,
     (index) => (text: 'Line ${index + 1}', toggled: false),
@@ -59,12 +62,20 @@ class _MyAppState extends State<MyApp> {
                   ? null
                   : (value) => setState(() => toggleable = value),
             ),
+            SwitchListTile(
+              title: const Text('Reorderable when disabled'),
+              value: reorderable,
+              onChanged: enabled
+                  ? null
+                  : (value) => setState(() => reorderable = value),
+            ),
             const Divider(),
             Expanded(
               child: Checklist(
                 lines: lines,
                 enabled: enabled,
                 toggleable: toggleable,
+                reorderable: reorderable,
                 onChanged: onChanged,
               ),
             ),

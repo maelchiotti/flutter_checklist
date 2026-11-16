@@ -11,6 +11,7 @@ class ItemTile extends StatefulWidget {
     required this.value,
     this.enabled = true,
     this.toggleable = false,
+    this.reorderable = false,
     this.checkedReadOnly = false,
     this.autofocus = false,
     this.keyboardType = TextInputType.text,
@@ -49,6 +50,11 @@ class ItemTile extends StatefulWidget {
   ///
   /// Defaults to `false`.
   final bool toggleable;
+
+  /// Whether this item shows its drag handle when it is not [enabled], so that it can be reordered.
+  ///
+  /// Defaults to `false`.
+  final bool reorderable;
 
   /// Whether this item should be read only if checked.
   final bool checkedReadOnly;
@@ -201,7 +207,8 @@ class _ItemTileState extends State<ItemTile> {
                         icon: Icon(Icons.close),
                         onPressed: onRemove,
                       ),
-                    if (widget.enabled) Icon(Icons.drag_indicator)
+                    if (widget.enabled || widget.reorderable)
+                      Icon(Icons.drag_indicator)
                   ],
                 ),
                 visualDensity: VisualDensity.compact,

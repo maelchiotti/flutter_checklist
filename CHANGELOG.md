@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Add the `toggleable` option to allow toggling the lines of a disabled checklist, without editing, removing, adding or reordering them.
+- Add the `reorderable` option to allow reordering the lines of a disabled checklist, without editing, removing or adding them.
 
 ## 2.0.0 - 2026-11-15
 
